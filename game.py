@@ -59,29 +59,18 @@ class Game(object):
         
 
         for i in all_hand_combinations:
-
             
             
+            intact_hand_values = []
+            intact_hand_suits = []
+
+            for j in i:
+                intact_hand_suits.append(j.suit)
+                intact_hand_values.append(j.value)
             
-            for bubble_sort in range(25):
-                for j in range(5):
-
-                    a = j + 1
-
-                    if(j == 4):
-                        break
-                    
-                    if(i[j].value > i[a].value):
-                        #print("Entrou no if, portanto ",i[j].value, "é maior que ", i[a].value)
-                        aux = i[j].value
-                        aux_suit = i[j].suit
-
-                        i[j].value = i[a].value
-                        i[j].suit = i[a].suit
-                        i[a].value = aux
-                        i[a].suit = aux_suit
+            
                         
-
+                   
             
             value_list = []
             suit_list = []
@@ -94,7 +83,28 @@ class Game(object):
                 suit_list.append(j.suit)
                 value_list.append(j.value)
 
-            
+            intact_value_dict = defaultdict(lambda:0)
+            intact_suit_dict = defaultdict(lambda:0)
+            bubble_value_dict = defaultdict(lambda:0)
+            bubble_suit_dict = defaultdict(lambda:0)
+
+            for value in intact_hand_values:
+                intact_value_dict[value] += 1
+            for value in intact_hand_suits:
+                intact_suit_dict[value] +=1
+
+
+
+            for value in value_list:
+                bubble_value_dict[value] += 1
+            for value in suit_list:
+                bubble_suit_dict[value] +=1
+
+            if sorted(intact_value_dict.values()) != sorted(bubble_value_dict.values()):
+                print("OS VALORES DIVERGIRAM ANTES E DEPOIS DO SORT")
+            if(sorted(intact_suit_dict.values()) != sorted(bubble_suit_dict.values())):
+                print("NAIPES MUDARAM")
+                
 
             if len(value_list) != 5:
                 print("error")
@@ -120,8 +130,45 @@ class Game(object):
                 if test > 3:
                     print("existe um valor maior que 12 na suit list")
                     break
+            
+            def check_dictpattern(value_list, suit_list):
 
-            def check_fourkind(value_list):
+                value_counts = defaultdict(lambda:0)
+                suit_counts = defaultdict(lambda:0)
+                ace_straight = False
+                for value in value_list:
+                    value_counts[value] += 1
+                for value in suit_list:
+                    suit_counts[value] +=1
+                value_range = max(value_list) - min(value_list)
+
+                
+                if set(value_list) == {12,0,1,2,3}:
+                        
+                        ace_straight = True
+
+
+
+                if sorted(suit_counts.values()) == [5] and sorted(value_counts.values()) == [1,1,1,1,1] and ((value_range == 4) or ace_straight):
+                    return 9
+                elif sorted(value_counts.values()) == [1,4]: #quadra
+                    return 8
+                elif sorted(value_counts.values()) == [2,3]: # full house
+                    return 7
+                elif sorted(suit_counts.values()) == [5]: #flush
+                    return 6
+                elif sorted(value_counts.values()) == [1,1,1,1,1] and ((value_range == 4) or ace_straight): #sequencia
+                    return 5
+                elif sorted(value_counts.values()) == [1,1,3]:
+                    return 4
+                elif sorted(value_counts.values()) == [1,2,2]:
+                    return 3
+                elif sorted(value_counts.values()) == [1,1,1,2]:
+                    return 2
+                else:
+                    return 1
+
+            def check_fourkind(value_list,suit_list):
                 value_counts = defaultdict(lambda:0)
                 for value in value_list:
                     value_counts[value] += 1
@@ -129,7 +176,7 @@ class Game(object):
                     return True
                 return False
             
-            def check_fullhouse(value_list):
+            def check_fullhouse(value_list,suit_list):
                 
                 value_counts = defaultdict(lambda:0)
                 for value in value_list:
@@ -142,7 +189,7 @@ class Game(object):
             
 
 
-            def check_flush(suit_list):
+            def check_flush(value_list,suit_list):
                 value_counts = defaultdict(lambda:0)
                 for value in suit_list:
                     value_counts[value] += 1
@@ -157,7 +204,7 @@ class Game(object):
                  
                     return False
 
-            def check_straight(value_list):
+            def check_straight(value_list,suit_list):
                 value_counts = defaultdict(lambda:0)
                 for values in value_list:
                     value_counts[values] += 1
@@ -178,7 +225,7 @@ class Game(object):
 
                     
 
-            def check_threeofkind(value_list):
+            def check_threeofkind(value_list,suit_list):
                 value_counts = defaultdict(lambda:0)
                 for value in value_list:
                     value_counts[value]+=1
@@ -189,7 +236,7 @@ class Game(object):
                 else:
                     return False
 
-            def check_doispares(value_list):
+            def check_doispares(value_list,suit_list):
                 value_counts = defaultdict(lambda:0)
                 for value in value_list:
                     value_counts[value]+=1
@@ -201,7 +248,7 @@ class Game(object):
 
 
             
-            def check_pair(value_list):
+            def check_pair(value_list,suit_list):
                 value_counts = defaultdict(lambda:0)
                 for value in value_list:
                     value_counts[value]+=1
@@ -213,62 +260,75 @@ class Game(object):
                     return False
 
 
-
+            def check_highcard(value_list,suit_list):
+                value_counts = defaultdict(lambda:0)
+                for value in value_list:
+                    value_counts[value]+=1
+                if sorted(value_counts.values()) == [1,1,1,1,1]:
+                    return True
+                else:
+                    return False
 
             def check_combo(value_list,suit_list):
 
 
                 
-
-                if check_flush(suit_list) & check_straight(value_list):
+                if check_flush(value_list,suit_list) and check_straight(value_list,suit_list):
                     #print("Straight Flush", value_list, suit_list)
                     return 9
                     
                         
-                elif check_fourkind(value_list):
+                elif check_fourkind(value_list,suit_list):
                     #print("Quadra", value_list, suit_list)
                     return 8
 
-                elif check_fullhouse(value_list):
+                elif check_fullhouse(value_list,suit_list):
+                    
+                    
+                    
                     #print("Full house", value_list, suit_list)
                     return 7
                     
 
-                elif check_flush(suit_list):
+                elif check_flush(value_list,suit_list):
                     #print("Flush", value_list, suit_list)
                     return 6
                     
                 
-                elif check_straight(value_list):
+                elif check_straight(value_list,suit_list):
                     #print("Straight", value_list, suit_list)
                     return 5
                     
 
-                elif check_threeofkind(value_list):
+                elif check_threeofkind(value_list,suit_list):
                     #print("Trinca", value_list, suit_list)
                     return 4
                     
 
-                elif check_doispares(value_list):
+                elif check_doispares(value_list,suit_list):
                     #print("Dois Pares", value_list, suit_list)
                     return 3
                     
 
-                elif check_pair(value_list):
+                elif check_pair(value_list,suit_list):
                     #print("Par", value_list, suit_list)
                     return 2
                     
                 
-                
+                elif check_highcard(value_list,suit_list):
+                    return 1
                     
-                #print("High Card", value_list, suit_list)
-                return 1
+                
 
             
             actual_hand = check_combo(value_list, suit_list)
+            no_sort_hand = check_combo(intact_hand_values,intact_hand_suits)
             #print(actual_hand)
-
             
+
+            if actual_hand != no_sort_hand:
+                print("breakingggggggggggggggggggggggg")
+                break
             
 
             if actual_hand < 1:
@@ -290,13 +350,17 @@ class Game(object):
 
             
 
+        
+            
+
+
             
             
           
 
         
             
-       
+        
 
         return best_hand
         

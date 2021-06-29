@@ -9,7 +9,7 @@ montecarlo_iterations = 0
 
 result = defaultdict(lambda:0)
 
-while montecarlo_iterations < 10000:
+while montecarlo_iterations < 30000:
     
     game = Game()
 
@@ -19,7 +19,7 @@ while montecarlo_iterations < 10000:
 
     game.deck.deal(game.player)
  
-    #print("Carta do jogador: " + str(game.player.hand))
+    
 
     game.changeOfState()
 
